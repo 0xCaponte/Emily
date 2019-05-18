@@ -3,20 +3,19 @@ import numpy as np
 from board.src import Constants
 
 
-class Position:  # Class representing the state of the board
+class Position:  # Class that represent a position of the game
 
     # ------------------------------------------------------------------------------
     # Functions for position set-up
     # ------------------------------------------------------------------------------
 
-    # Creates a Position/State with the given position of the pieces
+    # Populates a Position/State with the given position of the pieces
     def __init__(self, red, white, kings):
         # 3 uint32 Bitboards represent the complete state of the board
         self.red = red
         self.white = white
         self.kings = kings
 
-    # Returns the initial position of the game
     @staticmethod
     def initial_position():
         return Position(Constants.RED, Constants.WHITE, Constants.KINGS)
@@ -46,22 +45,18 @@ class Position:  # Class representing the state of the board
     # ------------------------------------------------------------------------------
     @staticmethod
     def get_rank_from_index(index):
-        return index // 4
+        return (index // 4) + 1
 
     @staticmethod
     def get_file_from_index(index):
-        return 7 - ((index % 4) * 2) - ((index // 4 + 1) % 2)
-
-    # ------------------------------------------------------------------------------
-    # Functions to move a piece
-    # ------------------------------------------------------------------------------
+        return (7 - ((index % 4) * 2) - ((index // 4 + 1) % 2)) + 1
 
     # ------------------------------------------------------------------------------
     # Functions to display a position
     # ------------------------------------------------------------------------------
 
     # Prints the given position
-    def display_board(self):
+    def display_position(self):
         rk = self.red_kings()
         rm = self.red_men()
         wk = self.white_kings()
@@ -69,17 +64,17 @@ class Position:  # Class representing the state of the board
 
         board = np.chararray((8, 8), 8, True)
         board[:] = '|__|'
-        board = Position.fill_board(board, rm, Constants.RED_MAN)
-        board = Position.fill_board(board, rk, Constants.RED_KING)
-        board = Position.fill_board(board, wm, Constants.WHITE_MAN)
-        board = Position.fill_board(board, wk, Constants.WHITE_KING)
+        board = Position.fill_position(board, rm, Constants.RED_MAN)
+        board = Position.fill_position(board, rk, Constants.RED_KING)
+        board = Position.fill_position(board, wm, Constants.WHITE_MAN)
+        board = Position.fill_position(board, wk, Constants.WHITE_KING)
 
         for rank in board[::-1]:
             print(' '.join(map(str, rank)))
 
     # Fills the board matrix based on the given bitboard and piece unicode code
     @staticmethod
-    def fill_board(board, piece_bitboard: np.uint32, piece_type):
+    def fill_position(board, piece_bitboard: np.uint32, piece_type):
         index = 0
         for bit in np.binary_repr(piece_bitboard, 32):
             if bit == '1':

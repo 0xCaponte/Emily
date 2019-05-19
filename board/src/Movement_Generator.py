@@ -3,7 +3,7 @@ import numpy as np
 from board.src.Position import Position
 
 
-class MovementGenerator:  # Class that generates all movements from each valid square
+class MovementGenerator:  # Class that generates all moves from each valid square
 
     # ------------------------------------------------------------------------------
     # Generate all moves from all squares
@@ -64,12 +64,63 @@ class MovementGenerator:  # Class that generates all movements from each valid s
 
     @staticmethod
     def generate_attack_moves():  # captures
-        pass
+
+        attack_moves = []
+        # Piece starting at square 1 (index 0)
+        position = np.uint32(0x80000000)
+
+        for i in range(0, 32):
+
+            moves_from_square = []
+
+            if Position.get_rank_from_index(i) == 1 or Position.get_rank_from_index(i) == 2:
+
+                if Position.get_file_from_index(i) == 1 or Position.get_file_from_index(i) == 2:
+                    moves_from_square.append(MovementGenerator.capture_north_east(position))
+
+                elif Position.get_file_from_index(i) == 7 or Position.get_file_from_index(i) == 8:
+                    moves_from_square.append(MovementGenerator.capture_north_west(position))
+
+                else:
+                    moves_from_square.append(MovementGenerator.capture_north_west(position))
+                    moves_from_square.append(MovementGenerator.capture_north_east(position))
+
+            elif Position.get_rank_from_index(i) == 7 or Position.get_rank_from_index(i) == 8:
+
+                if Position.get_file_from_index(i) == 1 or Position.get_file_from_index(i) == 2:
+                    moves_from_square.append(MovementGenerator.capture_south_east(position))
+
+                elif Position.get_file_from_index(i) == 7 or Position.get_file_from_index(i) == 8:
+                    moves_from_square.append(MovementGenerator.capture_south_west(position))
+
+                else:
+                    moves_from_square.append(MovementGenerator.capture_south_west(position))
+                    moves_from_square.append(MovementGenerator.capture_south_east(position))
+
+            else:
+                if Position.get_file_from_index(i) == 1 or Position.get_file_from_index(i) == 2:
+                    moves_from_square.append(MovementGenerator.capture_north_east(position))
+                    moves_from_square.append(MovementGenerator.capture_south_east(position))
+
+                elif Position.get_file_from_index(i) == 7 or Position.get_file_from_index(i) == 8:
+                    moves_from_square.append(MovementGenerator.capture_north_west(position))
+                    moves_from_square.append(MovementGenerator.capture_south_west(position))
+
+                else:
+                    moves_from_square.append(MovementGenerator.capture_north_east(position))
+                    moves_from_square.append(MovementGenerator.capture_north_west(position))
+                    moves_from_square.append(MovementGenerator.capture_south_west(position))
+                    moves_from_square.append(MovementGenerator.capture_south_east(position))
+
+            attack_moves.append(moves_from_square)
+            position = np.uint32(position >> 1)  # Move to the next square
+
+        return attack_moves
 
     # ------------------------------------------------------------------------------
-    # Functions to move a piece
+    # Functions to perform a quiet/non-capture move
     #
-    # Note: the odd_rank variable serves to adapt the shift of the movements between
+    # Note: the odd_rank variable serves to adapt the shift of the moves between
     # ranks.
     # ------------------------------------------------------------------------------
     @staticmethod
@@ -84,7 +135,6 @@ class MovementGenerator:  # Class that generates all movements from each valid s
 
     @staticmethod
     def move_south_east(position, odd_rank):
-
         shift = 5 - odd_rank
         return np.uint32(position | (position << shift))
 
@@ -93,18 +143,22 @@ class MovementGenerator:  # Class that generates all movements from each valid s
         shift = 4 - odd_rank
         return np.uint32(position | (position << shift))
 
+    # ------------------------------------------------------------------------------
+    # Functions to perform an attack/capture move
+    #
+    # ------------------------------------------------------------------------------
     @staticmethod
-    def print_moves(moves):
+    def capture_north_east(position):
+        return np.uint32(position | (position >> 7))
 
-        for i in range(0, 32):
+    @staticmethod
+    def capture_north_west(position):
+        return np.uint32(position | (position >> 9))
 
-            print("From square = {}".format(i))
+    @staticmethod
+    def capture_south_east(position):
+        return np.uint32(position | (position << 9))
 
-            # TODO Remember that the move has from and to. I just want the To
-            # Front == i
-            for move in moves[i]:
-                move[i] = 0
-                print("\t To Square 1 = {}".format(move.bit_length - 1))
-                print("\t To Square 2 = {}".format(int(np.math.log(move, 2)) + 1))
-
-        print(moves)
+    @staticmethod
+    def capture_south_west(position):
+        return np.uint32(position | (position << 7))

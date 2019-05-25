@@ -2,7 +2,7 @@ import copy
 
 import numpy as np
 
-from board.src import Constants
+import Constants
 
 
 class Position:  # Class that represent a position of the game
@@ -20,7 +20,7 @@ class Position:  # Class that represent a position of the game
 
     @staticmethod
     def initial_position():
-        return Position(Constants.RED, Constants.WHITE, Constants.KINGS)
+        return Position(Constants.INITIAL_REDS, Constants.INITIAL_WHITES, Constants.INITIAL_KINGS)
 
     # ------------------------------------------------------------------------------
     # Functions to obtain the position of the pieces
@@ -88,7 +88,7 @@ class Position:  # Class that represent a position of the game
 
         board = np.chararray((8, 8), 8, True)
         board[:] = '|__|'
-        board = Position.fill_position(board, rm, Constants.RED_MAN)
+        board = Position.fill_position(board, rm, Constants.RED_MAN_ICON)
         board = Position.fill_position(board, rk, Constants.RED_KING)
         board = Position.fill_position(board, wm, Constants.WHITE_MAN)
         board = Position.fill_position(board, wk, Constants.WHITE_KING)

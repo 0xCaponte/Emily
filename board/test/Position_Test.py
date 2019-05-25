@@ -1,4 +1,4 @@
-from board.src import Constants
+import Constants
 # Test for the Position class
 from board.src.Position import Position
 
@@ -6,13 +6,13 @@ from board.src.Position import Position
 # Test the creation and modification of a position
 def test_initial_position():
     initial_position = Position.initial_position()
-    assert initial_position.red == Constants.RED
-    assert initial_position.white == Constants.WHITE
-    assert initial_position.kings == Constants.KINGS
+    assert initial_position.red == Constants.INITIAL_REDS
+    assert initial_position.white == Constants.INITIAL_WHITES
+    assert initial_position.kings == Constants.INITIAL_KINGS
 
     # All initial pieces are men
-    assert initial_position.red_men() == Constants.RED
-    assert initial_position.white_men() == Constants.WHITE
+    assert initial_position.red_men() == Constants.INITIAL_REDS
+    assert initial_position.white_men() == Constants.INITIAL_WHITES
 
 # def test_moves_from_initial_position():
 #     initial_position = Position.initial_position()

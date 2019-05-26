@@ -2,7 +2,7 @@ import copy
 
 import numpy as np
 
-import Constants
+from game import Constants
 
 
 class Position:  # Class that represent a position of the game
@@ -75,11 +75,19 @@ class Position:  # Class that represent a position of the game
 
         return count
 
+    @staticmethod
+    def get_bitboard_from_index(index):
+
+        position = copy.deepcopy(Constants.MSB_SET)
+        for x in range(index):
+            position = position >> 1
+
+        return position
+
     # ------------------------------------------------------------------------------
     # Functions to display a position
     # ------------------------------------------------------------------------------
-
-    # Prints the given position
+    # Prints the given position on the console
     def display_position(self):
         rk = self.red_kings()
         rm = self.red_men()
@@ -88,23 +96,23 @@ class Position:  # Class that represent a position of the game
 
         board = np.chararray((8, 8), 8, True)
         board[:] = '|__|'
-        board = Position.fill_position(board, rm, Constants.RED_MAN_ICON)
-        board = Position.fill_position(board, rk, Constants.RED_KING)
-        board = Position.fill_position(board, wm, Constants.WHITE_MAN)
-        board = Position.fill_position(board, wk, Constants.WHITE_KING)
+        board = Position.fill_position(board, rm, Constants.RED_MAN_UNICODE)
+        board = Position.fill_position(board, rk, Constants.RED_KING_UNICODE)
+        board = Position.fill_position(board, wm, Constants.WHITE_MAN_UNICODE)
+        board = Position.fill_position(board, wk, Constants.WHITE_KING_UNICODE)
 
         for rank in board[::-1]:
             print(' '.join(map(str, rank)))
 
     # Fills the board matrix based on the given bitboard and piece unicode code
     @staticmethod
-    def fill_position(board, piece_bitboard: np.uint32, piece_type):
+    def fill_position(board, piece_bitboard: np.uint32, piece_unicode):
         index = 0
         for bit in np.binary_repr(piece_bitboard, 32):
             if bit == '1':
-                rank = Position.get_rank_from_index(index)
-                file = Position.get_file_from_index(index)
-                board[rank][file] = "|{0}|".format(piece_type)
+                rank = Position.get_rank_from_index(index) - 1
+                file = Position.get_file_from_index(index) - 1
+                board[rank][file] = "|{0}|".format(piece_unicode)
             index += 1
 
         return board
@@ -113,93 +121,75 @@ class Position:  # Class that represent a position of the game
     # Functions to execute a given move and update the position
     #
     # ------------------------------------------------------------------------------
-    def execute_move(self, move, capture, player):
+    def execute_move(self, move, is_capture, captured, player):
 
         # Get the bitboards of the origin and destination squares
-        if player:
-            origin = np.uint32(self.red & move)
-        else:
-            origin = np.uint32(self.white & move)
+        origin = np.uint32(self.red & move) if player else np.uint32(self.white & move)
+        destination = np.uint32(origin ^ move)
 
-        destination = np.uint32(origin ^ move())
-
-        # if not valid == 0. If capure -> bitboard of the captured piece
-        relevant_bitboard = self.is_valid_move(origin, destination, capture, player)
-
-        if relevant_bitboard:
+        # if not valid == 0
+        if self.is_valid_move(destination, is_capture, captured, player):
 
             new_position = copy.deepcopy(self)
 
-            # Update the player's bitboard
+            # Whole Color
             if player:
                 new_position.red = np.uint32(new_position.red ^ move)
-
             else:
                 new_position.white = np.uint32(new_position.white ^ move)
 
-            # Update the existing kings's bitboard, if needed
-            if not (new_position.kings & move):  # 0 means that the piece moved was not a king
+            # Kings
+            if new_position.kings & move:  # 0 means the piece moved was not a king
                 new_position.kings = np.uint32(new_position.kings ^ move)
 
-            # Check if there was a crowning
-            self.check_crowning(new_position, destination, player)
-
-            if capture:  # Remove piece from opponent's bitboard
-
+            # Update opponent's bitboards
+            if is_capture:
                 if player:
-                    new_position.white = np.uint32(new_position.white ^ relevant_bitboard)
-
+                    new_position.white = np.uint32(new_position.white ^ captured)
                 else:
-                    new_position.red = np.uint32(new_position.red ^ relevant_bitboard)
+                    new_position.red = np.uint32(new_position.red ^ captured)
+
+            # Check and perform crowning
+            self.check_crowning(new_position, destination, player)
 
             return new_position
 
         return Constants.EMPTY_BOARD
 
     # If it is a capture, the returned value will be the bitboard of the captured piece
-    def is_valid_move(self, origin, destination, capture, player):
+    def is_valid_move(self, destination, is_capture, captured, player):
 
-        if player:
-            bitboard = self.red
-        else:
-            bitboard = self.white
+        board = self.white ^ self.red
 
         # Check that destination is not occupied
-        if bitboard & destination:
+        if not board & destination:  # 0 == free square
 
-            if capture:  # Check that the captured piece is not ours
-                captured = self.get_captured_piece(origin, destination)  # TODO get captured square
+            if is_capture:  # Check that the captured piece is not ours
 
-                if (self.red | self.white) & captured:  # There is a piece to capture
-
-                    if player:
+                if board & captured:  # There is a piece to captures
+                    if player:  # Red
                         if self.white & captured:  # Check against white pieces
-                            return captured
+                            return 1
                     else:
                         if self.red & captured:  # Check against red pieces
-                            return captured
-        else:
-            return 1
+                            return 1
+            else:
+                return 1
 
         return 0
 
-    # Return the bitboard of the captured piece
-    def get_captured_piece(self, origin, destination):
-        captured = np.uint32(0x00000000)  # Bitboard of the captured piece
-        return captured
-
     # Updates the new position if a crowning occurred
-    def check_crowning(self, new_position, destination, player):
+    @staticmethod
+    def check_crowning(new_position, destination, player):
 
-        # Check that the piece is not already a king
+        # piece is not already a king
         if not new_position.kings & destination:
-
-            if player:
-                index = Position.find_index_of_less_significant_bit(destination)  # white's usually closer to LSB
+            if player:  # Red
+                index = Position.find_index_of_less_significant_bit(destination)  # white is  closer to LSB
                 if Position.get_rank_from_index(index) == 8:
                     new_position.kings = new_position.kings | destination
 
             else:
-                index = Position.find_index_of_most_significant_bit(destination)  # red's usually closer to MSB
+                index = Position.find_index_of_most_significant_bit(destination)  # red is closer to MSB
                 if Position.get_rank_from_index(index) == 1:
                     new_position.kings = new_position.kings | destination

@@ -1,6 +1,6 @@
-import Constants
 # Test for the Position class
 from board.src.Position import Position
+from game import Constants
 
 
 # Test the creation and modification of a position

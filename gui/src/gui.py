@@ -4,8 +4,8 @@ import tkinter
 import numpy as np
 from PIL import ImageTk, Image
 
-import Constants
 from board.src.Position import Position
+from game import Constants
 
 
 class Gui:
@@ -26,7 +26,7 @@ class Gui:
         self.canvas.pack(padx=8, pady=8)  # Padding to the border of the window
 
         # Creating the pieces
-        width = height = self.total_squares
+        width = height = round(self.total_squares * 0.75)  # will take 75% of the square size
         red_man_icon = Image.open(Constants.RED_MAN_ICON).resize((width, height), Image.ANTIALIAS)
         red_king_icon = Image.open(Constants.RED_KING_ICON).resize((width, height), Image.ANTIALIAS)
         white_man_icon = Image.open(Constants.WHITE_MAN_ICON).resize((width, height), Image.ANTIALIAS)

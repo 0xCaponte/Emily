@@ -1,6 +1,7 @@
 from board.src.Movement_Generator import MovementGenerator
 from board.src.Position import Position
 
+
 def main():
     position = Position.initial_position()
     position.display_position()

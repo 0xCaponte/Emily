@@ -23,9 +23,9 @@ class Gui:
         canvas_width = (self.files * self.total_squares) * 1.5  # Extra area for the menu
         canvas_height = self.ranks * self.total_squares * 1.25
         self.canvas = tkinter.Canvas(parent, width=canvas_width, height=canvas_height, background="white")
-        self.canvas.pack(padx=8, pady=8)  # Padding to the border of the window
+        self.canvas.pack(padx=8, pady=8)  # Window's Padding
 
-        # Creating the pieces
+        # Pieces
         width = height = round(self.total_squares * 0.75)  # will take 75% of the square size
         red_man_icon = Image.open(Constants.RED_MAN_ICON).resize((width, height), Image.ANTIALIAS)
         red_king_icon = Image.open(Constants.RED_KING_ICON).resize((width, height), Image.ANTIALIAS)

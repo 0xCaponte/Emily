@@ -30,8 +30,8 @@ WHITE_COLOR = "#FFFFFF"
 BLACK_COLOR = "#000000"
 
 # Path to the pieces' images
-RED_MAN_ICON = "../gui/res/red_man.png"
-RED_KING_ICON = "../gui/res/red_king.png"
-WHITE_MAN_ICON = "../gui/res/white_man.png"
-WHITE_KING_ICON = "../gui/res/white_king.png"
+RED_MAN_ICON = "../res/red_man.png"
+RED_KING_ICON = "../res/red_king.png"
+WHITE_MAN_ICON = "../res/white_man.png"
+WHITE_KING_ICON = "../res/white_king.png"
 
